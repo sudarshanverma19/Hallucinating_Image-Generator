@@ -3,111 +3,279 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DeepDream Image Generator</title>
-    <link rel="stylesheet" href="/static/css/style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>Deep Dreams Hallucination Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+        
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+        
+        .upload-section {
+            margin-bottom: 20px;
+        }
+        
+        .file-input-container {
+            margin-bottom: 15px;
+        }
+        
+        .file-input {
+            width: 100%;
+            padding: 10px;
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            background: #f9f9f9;
+            text-align: center;
+            cursor: pointer;
+        }
+        
+        .style-selection {
+            margin-bottom: 20px;
+        }
+        
+        .style-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .style-option {
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            background: white;
+            transition: all 0.3s ease;
+        }
+        
+        .style-option:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+        
+        .style-option.active {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+        
+        .style-option h4 {
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .style-option p {
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        .generate-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .generate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .generate-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .result-section {
+            margin-top: 20px;
+            text-align: center;
+        }
+        
+        .result-image {
+            max-width: 100%;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .progress {
+            margin: 20px 0;
+            color: #667eea;
+            font-weight: bold;
+        }
+        
+        .error {
+            color: #d32f2f;
+            background: #ffebee;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        
+        .success {
+            color: #388e3c;
+            background: #e8f5e8;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
-        <header class="header">
-            <h1><i class="fas fa-magic"></i> DeepDream Image Generator</h1>
-            <p>Upload an image and watch AI create psychedelic, dream-like transformations!</p>
-        </header>
-
-        <main class="main-content">
-            <!-- Upload Section -->
+        <div class="header">
+            <h1>🎨 Deep Dreams Hallucination Generator</h1>
+            <p>Create beautiful image hallucination effects with 4 amazing PIL filters</p>
+        </div>
+        
+        <form id="dreamForm" enctype="multipart/form-data">
             <div class="upload-section">
-                <div class="upload-area" id="uploadArea">
-                    <div class="upload-content">
-                        <i class="fas fa-cloud-upload-alt upload-icon"></i>
-                        <h3>Choose an image to transform</h3>
-                        <p>Drag and drop your image here, or click to browse</p>
-                        <input type="file" id="imageInput" accept="image/*" hidden>
-                        <button class="browse-btn" onclick="document.getElementById('imageInput').click()">
-                            <i class="fas fa-folder-open"></i> Browse Files
-                        </button>
+                <h3>📁 Upload Your Image</h3>
+                <div class="file-input-container">
+                    <input type="file" id="imageFile" name="file" accept="image/*" class="file-input" required>
+                </div>
+            </div>
+            
+            <div class="style-selection">
+                <h3>🎨 Choose Your Dream Style</h3>
+                <div class="style-grid">
+                    <div class="style-option active" data-style="psychedelic">
+                        <h4>🌈 Psychedelic</h4>
+                        <p>Vibrant colors and enhanced contrasts</p>
+                    </div>
+                    <div class="style-option" data-style="artistic">
+                        <h4>🖼️ Artistic</h4>
+                        <p>Painting-like smooth effects</p>
+                    </div>
+                    <div class="style-option" data-style="surreal">
+                        <h4>🌀 Surreal</h4>
+                        <p>Dream-like surreal transformations</p>
+                    </div>
+                    <div class="style-option" data-style="fractal">
+                        <h4>🔄 Fractal</h4>
+                        <p>Repetitive pattern-based effects</p>
                     </div>
                 </div>
             </div>
-
-            <!-- Image Preview and Generation Section -->
-            <div class="generation-section" id="generationSection" style="display: none;">
-                <div class="image-container">
-                    <!-- Original Image -->
-                    <div class="image-card">
-                        <h3><i class="fas fa-image"></i> Original Image</h3>
-                        <div class="image-wrapper">
-                            <img id="originalImage" src="" alt="Original Image">
-                        </div>
-                    </div>
-
-                    <!-- Arrow -->
-                    <div class="arrow-container">
-                        <i class="fas fa-arrow-right transform-arrow"></i>
-                    </div>
-
-                    <!-- Generated Image -->
-                    <div class="image-card">
-                        <h3><i class="fas fa-wand-magic-sparkles"></i> Generated Image</h3>
-                        <div class="image-wrapper">
-                            <div id="loadingSpinner" class="loading-spinner">
-                                <i class="fas fa-spinner fa-spin"></i>
-                                <p>Generating your image...</p>
-                            </div>
-                            <img id="generatedImage" src="" alt="Generated Image" style="display: none;">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Model Selection -->
-                <div class="model-selection">
-                    <div class="model-selector-card">
-                        <h3><i class="fas fa-brain"></i> Choose AI Model</h3>
-                        <div class="model-dropdown">
-                            <select id="modelSelect" class="model-select">
-                                <option value="inception" selected>Model 1 (Abstract & Complex)</option>
-                                <option value="vgg16">Model 2 (Geometric & Structured)</option>
-                            </select>
-                        </div>
-                        <p class="model-description">
-                            <span id="modelDescription">Creates complex, abstract dream patterns with intricate details</span>
-                        </p>
-                    </div>
-                </div>
-
-                <!-- Action Buttons -->
-                <div class="action-buttons">
-                    <button class="btn btn-primary" id="generateBtn">
-                        <i class="fas fa-play"></i> Generate Image
-                    </button>
-                    <button class="btn btn-secondary" id="downloadBtn" style="display: none;">
-                        <i class="fas fa-download"></i> Download Result
-                    </button>
-                    <button class="btn btn-outline" id="newImageBtn">
-                        <i class="fas fa-plus"></i> Try Another Image
-                    </button>
-                </div>
-            </div>
-
-            <!-- Info Section -->
-            <div class="info-section">
-                <div class="info-card">
-                    <h3><i class="fas fa-info-circle"></i> How it works</h3>
-                    <ol>
-                        <li>Upload any image (JPG, PNG, etc.)</li>
-                        <li>Click "Generate Image" to transform it</li>
-                        <li>Download your AI-generated result</li>
-                    </ol>
-                </div>
-            </div>
-        </main>
-
-        <footer class="footer">
-            <p>&copy; 2025 CIFAR-10 Image Generator. Powered by SUDARSHAN VERMA.</p>
-        </footer>
+            
+            <button type="submit" class="generate-btn" id="generateBtn">
+                ✨ Generate Dream Effect
+            </button>
+        </form>
+        
+        <div id="status"></div>
+        <div id="result" class="result-section"></div>
     </div>
 
-    <script src="/static/js/main.js"></script>
+    <script>
+        let selectedStyle = 'psychedelic';
+        
+        // Style selection
+        document.querySelectorAll('.style-option').forEach(option => {
+            option.addEventListener('click', function() {
+                document.querySelectorAll('.style-option').forEach(o => o.classList.remove('active'));
+                this.classList.add('active');
+                selectedStyle = this.dataset.style;
+            });
+        });
+        
+        // Form submission
+        document.getElementById('dreamForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const fileInput = document.getElementById('imageFile');
+            const generateBtn = document.getElementById('generateBtn');
+            const statusDiv = document.getElementById('status');
+            const resultDiv = document.getElementById('result');
+            
+            if (!fileInput.files[0]) {
+                statusDiv.innerHTML = '<div class="error">Please select an image file!</div>';
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            formData.append('style', selectedStyle);
+            
+            generateBtn.disabled = true;
+            generateBtn.textContent = '⏳ Processing...';
+            statusDiv.innerHTML = '<div class="progress">Applying ' + selectedStyle + ' filter effects...</div>';
+            resultDiv.innerHTML = '';
+            
+            try {
+                const response = await fetch('/generate', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const imageUrl = URL.createObjectURL(blob);
+                    
+                    statusDiv.innerHTML = '<div class="success">✅ Dream effect applied successfully!</div>';
+                    resultDiv.innerHTML = `
+                        <h3>🎉 Your Dream Image</h3>
+                        <img src="${imageUrl}" alt="Dream Result" class="result-image">
+                        <br><br>
+                        <a href="${imageUrl}" download="dream_${selectedStyle}.png" class="generate-btn" style="display: inline-block; text-decoration: none; margin: 10px;">
+                            💾 Download Image
+                        </a>
+                    `;
+                } else {
+                    throw new Error('Failed to generate dream effect');
+                }
+            } catch (error) {
+                statusDiv.innerHTML = '<div class="error">❌ Error: ' + error.message + '</div>';
+            } finally {
+                generateBtn.disabled = false;
+                generateBtn.textContent = '✨ Generate Dream Effect';
+            }
+        });
+        
+        // File input styling
+        document.getElementById('imageFile').addEventListener('change', function(e) {
+            const fileName = e.target.files[0] ? e.target.files[0].name : 'Choose an image file';
+            this.style.color = e.target.files[0] ? '#333' : '#999';
+        });
+    </script>
 </body>
 </html>
